@@ -1,3 +1,12 @@
+<<<<<<< HEAD
 userconfig.py
 *.pyc
 qtlab.lock
+=======
+*.pyc
+userconfig.py
+qtlab.cfg
+qtlab.lock
+qtlab.log
+qtlabgui.cfg
+>>>>>>> 2d1e8324ce73368de3cb739f97e55cf6cbccfc92
