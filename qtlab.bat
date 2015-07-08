@@ -30,21 +30,23 @@ IF EXIST c:\python26\python.exe (
 :mark1
 
 :: Run QTlab
-:: check if version < 0.11
-rem IF EXIST "%PYTHON_PATH%\scripts\ipython.py" (
-rem     start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython.py -gthread -p sh source/qtlab_shell.py"
-rem     GOTO EOF
-rem )
+:: If ipython 0.12 installed with enthought distribution
+IF EXIST "%PYTHON_PATH%\scripts\ipython.bat" (
+    start Console -w "QTLab" -r "/k %PYTHON_PATH%\scripts\ipython.bat --gui=gtk -i source/qtlab_shell.py"
+    GOTO EOF
+)
+:: If ipython < 0.11
+IF EXIST "%PYTHON_PATH%\scripts\ipython.py" (
+    start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython.py -gthread -p sh source/qtlab_shell.py"
+    GOTO EOF
+)
 
-:: check if version >= 0.11
-rem IF EXIST "%PYTHON_PATH%\scripts\ipython-script.py" (
-rem     start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython-script.py --gui=gtk -i source/qtlab_shell.py"
-rem     GOTO EOF
-rem )
+:: If ipython >= 0.11
+IF EXIST "%PYTHON_PATH%\scripts\ipython-script.py" (
+    start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython-script.py --gui=gtk -i source/qtlab_shell.py"
+    GOTO EOF
+)
 
-REM start Console -w "QTLab" -r "/k %PYTHON_PATH%\scripts\ipython.bat --gui=gtk --i source/qtlab_shell.py"
-start Console -w "QTLab2" -r "/k %PYTHON_PATH%\Scripts\ipython.exe --gui=gtk -i source/qtlab_shell.py"
-
-rem echo Failed to run qtlab.bat
-rem pause
+echo Failed to run qtlab.bat
+pause
 :EOF
