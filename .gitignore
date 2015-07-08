@@ -1,5 +1,4 @@
 *.pyc
-qtlab.lock
 qtlab.cfg
 qtlab.lock
 qtlab.log
