@@ -5,6 +5,7 @@
 config.remove([
             'datadir',
             'startdir',
+            'startscript',
             'scriptdirs',
             'user_ins_dir',
             'startgui',
@@ -26,27 +27,25 @@ config['instrument_server'] = False
 
 ## This sets a default location for data-storage
 #config['datadir'] = 'd:/data'
+config['datadir'] = 'D:/DATA'
 
 ## This sets a default directory for qtlab to start in
-#config['startdir'] = 'd:/scripts'
+config['startdir'] = 'D:/Experiment_remy/programmes/Scripts'
 
-## A default script (or list of scripts) to run after qtlab started
-config['startscript'] = []      #e.g. 'initscript1.py'
-
-## A default script (or list of scripts) to run when qtlab closes
-config['exitscript'] = []       #e.g. ['closescript1.py', 'closescript2.py']
+## This sets a default script to run after qtlab started
+config['startscript'] = '_initscript.py'
 
 # Add directories containing scripts here. All scripts will be added to the
 # global namespace as functions.
-config['scriptdirs'] = [
-        'examples/scripts',
+#config['scriptdirs'] = [
+#        'example/scripts',
 #        'd:/scripts',
-]
+#]
 
 ## This sets a user instrument directory
 ## Any instrument drivers placed here will take
 ## preference over the general instrument drivers
-#config['user_insdir'] = 'd:/instruments'
+config['user_insdir'] = 'D:/Experiment_remy/programmes/User-Instruments'
 
 ## For adding additional folders to the 'systm path'
 ## so python can find your modules
@@ -61,6 +60,3 @@ config['startgui'] = True
 #config['gnuplot_terminal'] = 'x11'
 #config['gnuplot_terminal'] = 'wxt'
 #config['gnuplot_terminal'] = 'windows'
-
-# Enter a filename here to log all IPython commands
-config['ipython_logfile'] = ''      #e.g. 'command.log'
