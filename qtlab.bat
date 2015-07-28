@@ -29,21 +29,23 @@ IF EXIST c:\python26\python.exe (
 )
 :mark1
 
-:: Run QTlab
-:: If ipython 0.12 installed with enthought distribution
+:: Run QTlab depending on the different installations of ipython
 IF EXIST "%PYTHON_PATH%\scripts\ipython.bat" (
     start Console -w "QTLab" -r "/k %PYTHON_PATH%\scripts\ipython.bat --gui=gtk -i source/qtlab_shell.py"
     GOTO EOF
 )
-:: If ipython < 0.11
 IF EXIST "%PYTHON_PATH%\scripts\ipython.py" (
     start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython.py -gthread -p sh source/qtlab_shell.py"
     GOTO EOF
 )
 
-:: If ipython >= 0.11
 IF EXIST "%PYTHON_PATH%\scripts\ipython-script.py" (
     start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython-script.py --gui=gtk -i source/qtlab_shell.py"
+    GOTO EOF
+)
+
+IF EXIST "%PYTHON_PATH%\scripts\ipython.exe" (
+    start Console -w "QTLab" -r "/k %PYTHON_PATH%\python.exe %PYTHON_PATH%\scripts\ipython.exe --gui=gtk -i source/qtlab_shell.py"
     GOTO EOF
 )
 
