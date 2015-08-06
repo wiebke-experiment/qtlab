@@ -503,7 +503,6 @@ class S21dB(Function):
         (ⅈ⋅Xe + Z₀)⋅⎜       ───────── + 1 + ──────────────⎟
                     ⎝            f₀             Qc⋅Z₀     ⎠
 
-
      parameters:
         Internal quality factor
         External quality factor
@@ -514,7 +513,7 @@ class S21dB(Function):
 
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('weight', WEIGHT_EQUAL)
-        kwargs.setdefault('nparams', 5)
+        kwargs.setdefault('nparams', 6)
         Function.__init__(self, *args, **kwargs)
 
     def func(self, p, x=None):
@@ -523,8 +522,9 @@ class S21dB(Function):
         Qi = p[0]
         Qc = p[1]
         f0 = p[2]
-        fd = p[3]
+        Xe = p[3]
         background = p[4]
+        Z0 = p[5]
 
         a = Z0/(Z0 + 1j*Xe)
         b = (1. + 2.*1j*Qi*(x-f0)/f0)/\
