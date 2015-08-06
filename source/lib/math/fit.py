@@ -201,7 +201,7 @@ class Function:
             self.set_weight(weight)
         self.set_data(x, y, yerr=yerr)
         p = self.fit(p0)
-            
+
         print '\tRandom par: %s' % (pr, )
         s = ''
         for val, err in zip(p, self.get_fit_errors()):
@@ -458,18 +458,17 @@ class Sine(Function):
         ret = np.ones_like(x) * p[0] + p[1] * np.sin(x * p[2] + p[3])
         return ret
 
-
-
 class S21dB(Function):
     '''
-    S21 fit function
+    Asymetrical S21 function.
+    See Étienne Dumur thesis manuscript appendix B.
 
      parameters:
         Internal quality factor
         External quality factor
-        Resonance frequency
-        Asymetry
-        background
+        Resonance frequency [GHz]
+        Asymetry (could be positive or negative) [ohm]
+        background [dB]
     '''
 
     def __init__(self, *args, **kwargs):
@@ -485,94 +484,13 @@ class S21dB(Function):
         f0 = p[2]
         fd = p[3]
         background = p[4]
-        
-        Q0 = Qi*Qc/(Qi + Qc)
-        omega0 = 2.*np.pi*f0
-        omegad = 2.*np.pi*fd
-        
-        ret = np.ones_like(x) * 1. - (Q0/Qc - 2.*1j*Q0*omegad/omega0)/(1. + 2.*1j*Q0*(2.*np.pi*x - omega0)/omega0)
-        return 20.*np.log10(abs(ret)) + background
 
+        a = Z0/(Z0 + 1j*Xe)
+        b = (1. + 2.*1j*Qi*(x-f0)/f0)/\
+            (1. + 2.*1j*Qi*(x-f0)/f0 + (Z0 + 1j*Xe)*Qi/Qc/Z0)
+        y = a*b
 
-
-class S21dB_asymetric_mismatch(Function):
-    '''
-    S21 fit function
-
-     parameters:
-        Internal quality factor
-        External quality factor
-        Resonance frequency
-        Asymetry
-        background
-    '''
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('weight', WEIGHT_EQUAL)
-        kwargs.setdefault('nparams', 5)
-        Function.__init__(self, *args, **kwargs)
-
-    def func(self, p, x=None):
-        p, x = self.get_px(p, x)
-
-        Qi = p[0]
-        Qc = p[1]
-        f0 = p[2]
-        Ze = 1j*p[3]
-        background = p[4]
-        
-        omega0 = 2.*np.pi*f0
-
-
-
-        sup =  50./(50. + Ze)*(1.       + 2.*1j*Qi*(2.*np.pi*x - omega0)/omega0)
-        sub = 1. + (50. + Ze)*Qi/Qc/50. + 2.*1j*Qi*(2.*np.pi*x - omega0)/omega0
-        
-        return 20.*np.log10(abs(sup/sub)) + background
-
-
-
-class S21dB_asymetric_mismatch_complete(Function):
-    '''
-    S21 fit function
-
-     parameters:
-        Internal quality factor
-        External quality factor
-        Resonance frequency
-        Resonator characteristic impedance
-        Asymetry
-        background
-    '''
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('weight', WEIGHT_EQUAL)
-        kwargs.setdefault('nparams', 6)
-        Function.__init__(self, *args, **kwargs)
-
-    def func(self, p, x=None):
-        p, x = self.get_px(p, x)
-        
-        Qi = p[0]
-        Qc = p[1]
-        f0 = p[2]
-        Ze = 1j*p[3]
-        background = p[4]
-        Zr = p[5]
-        
-        omega0 = 2.*np.pi*f0
-        
-        
-        sup = 2.*Qi*np.sqrt(2.*Qc*50.*Zr/np.pi)*(2.*np.pi*x - omega0)/omega0 - 1j*np.sqrt(2.*Qc*50.*Zr/np.pi)
-        sub = 1. + 2.*1j*Qi*((2.*np.pi*x - omega0)/omega0 - np.sqrt(2.*Zr/np.pi/50./Qc))
-        Ztot = sup/sub
-        
-        S = 2.*Ztot*50./(2.*Ztot*(50. + Ze) + (50. + Ze)**2.)
-        
-        
-        return 20.*np.log10(abs(S)) + background
-
-
+        return 20.*np.log10(abs(y)) + background
 
 class ExponentialDecaySine(Function):
     '''
@@ -718,4 +636,3 @@ if __name__ == "__main__":
 
     plt.plot(data[:,1], data[:,0], 'ks')
     plt.plot(data[:,1], gauss.func(p), 'r+')
-
