@@ -516,22 +516,35 @@ class S21dB(Function):
         kwargs.setdefault('nparams', 6)
         Function.__init__(self, *args, **kwargs)
 
-    def func(self, p, x=None):
+    def func(self, p, x=None, Z0=50., output='dB'):
         p, x = self.get_px(p, x)
 
         Qi = p[0]
         Qc = p[1]
         f0 = p[2]
         Xe = p[3]
-        background = p[4]
-        Z0 = p[5]
+        backgrounddB = p[4]
+        backgroundPhase = p[5]
 
         a = Z0/(Z0 + 1j*Xe)
         b = (1. + 2.*1j*Qi*(x-f0)/f0)/\
             (1. + 2.*1j*Qi*(x-f0)/f0 + (Z0 + 1j*Xe)*Qi/Qc/Z0)
         y = a*b
 
-        return 20.*np.log10(abs(y)) + background
+        if output == 'dB':
+            return 20.*np.log10(abs(y)) + backgrounddB
+        elif output == 'phase':
+
+            return np.angle(y.real + 1j*y.imag) + backgroundPhase
+        elif output == 'amplitude':
+
+            return abs(y)
+        elif output == 'real':
+
+            return y.real
+        elif output == 'imag':
+
+            return y.imag
 
 class ExponentialDecaySine(Function):
     '''
