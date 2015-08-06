@@ -1,3 +1,4 @@
+ # This Python file uses the following encoding: utf-8
 # fit.py, functions for fitting including uncertainty estimation
 # and option to keep parameters fixed.
 # Reinier Heeres <reinier@heeres.eu>, 2011
@@ -240,7 +241,9 @@ class Polynomial(Function):
     '''
     Polynomial fit function of order n
 
-    Polynomial(order=2) creates fit a + bx + cx**2
+    Polynomial(order=2) creates fit:
+                     2
+        a + b⋅x + c⋅x
     '''
 
     def __init__(self, *args, **kwargs):
@@ -258,7 +261,8 @@ class Polynomial(Function):
 
 class Linear(Polynomial):
     '''
-    Linear fit function a + bx
+    Linear fit function:
+        a + b⋅x
     '''
 
     def __init__(self, *args, **kwargs):
@@ -267,7 +271,15 @@ class Linear(Polynomial):
 
 class Gaussian(Function):
     '''
-    Gaussian fit function: a + b / d / sqrt(pi/2) * exp(-2(x - c)**2 / d**2)
+    Gaussian fit function:
+                       ⎛           2   ⎞
+              ___      ⎜ -2⋅(-c + x)   ⎜
+            ╲╱ 2 ⋅b⋅exp⎜ ───────────── ⎜
+                       ⎜        2      ⎜
+                       ⎝      d        ⎠
+        a + ─────────────────────────────
+                            ___
+                          ╲╱ π ⋅d
 
      parameters:
         background
@@ -303,7 +315,12 @@ class Gaussian(Function):
 
 class GaussianPlain(Function):
     '''
-    Gaussian fit function: a + b * exp(-4ln(2)(x - c)**2 / d**2)
+    Gaussian fit function:
+                 ⎛           2          ⎞
+                 ⎜ -4⋅(-c + x) ⋅ln(2)   ⎜
+        a + b⋅exp⎜ ──────────────────── ⎜
+                 ⎜           2          ⎜
+                 ⎝         d            ⎠
 
      parameters:
         background
@@ -339,7 +356,11 @@ class GaussianPlain(Function):
 
 class Lorentzian(Function):
     '''
-    Lorentzian fit function: a + 2bd / pi / (4(x - c)**2 + d**2)
+    Lorentzian fit function:
+                   2⋅b⋅d
+        a + ───────────────────
+              ⎛ 2            2⎞
+            π⋅⎝d  + 4⋅(x - c) ⎠
 
      parameters:
         background
@@ -375,7 +396,16 @@ class Lorentzian(Function):
 
 class FanoLorentzian(Function):
     '''
-    FanoLorentzian fit function: a + (b/(1 + q**2))*((q*c/2 + 2*pi*x)**2/( (2*pi*x)**2 + (c/2)**2))
+    FanoLorentzian fit function:
+                               2
+                  ⎛c⋅q        ⎞
+                b⋅⎜─── + 2⋅π⋅x⎟
+                  ⎝ 2         ⎠
+        a + ───────────────────────
+            ⎛ 2          ⎞
+            ⎜c       2  2⎟ ⎛ 2    ⎞
+            ⎜── + 4⋅π ⋅x ⎟⋅⎝q  + 1⎠
+            ⎝4           ⎠
 
      parameters:
         background
@@ -396,7 +426,8 @@ class FanoLorentzian(Function):
 
 class LinearSin(Function):
     '''
-    Sine fit function with a linear slop: a + b*x + c * sin(x * d + e)
+    Sine fit function with a linear slop:
+        a + b⋅x + c⋅sin(d⋅x + e)
 
      parameters:
         background
@@ -418,7 +449,8 @@ class LinearSin(Function):
 
 class Exponential(Function):
     '''
-    Exponential fit function: a + b * exp((x - c) * d)
+    Exponential fit function:
+        a + b⋅exp(d⋅(x -c))
 
      parameters:
         background
@@ -439,7 +471,8 @@ class Exponential(Function):
 
 class Sine(Function):
     '''
-    Sine fit function: a + b * sin(x * c + d)
+    Sine fit function:
+        a + b⋅sin(x⋅c + d)
 
      parameters:
         background
@@ -462,6 +495,14 @@ class S21dB(Function):
     '''
     Asymetrical S21 function.
     See Étienne Dumur thesis manuscript appendix B.
+                        ⎛2⋅ⅈ⋅Qi⋅(-f₀ + x)    ⎞
+                     Z₀⋅⎜       ───────── + 1⎟
+                        ⎝            f₀      ⎠
+        ───────────────────────────────────────────────────
+                    ⎛2⋅ⅈ⋅Qi⋅(-f₀ + x)       Qi⋅(ⅈ⋅Xe + Z₀)⎞
+        (ⅈ⋅Xe + Z₀)⋅⎜       ───────── + 1 + ──────────────⎟
+                    ⎝            f₀             Qc⋅Z₀     ⎠
+
 
      parameters:
         Internal quality factor
@@ -494,7 +535,8 @@ class S21dB(Function):
 
 class ExponentialDecaySine(Function):
     '''
-    Sine fit function: a + b * sin(x * c + d)*exp(-x/e)
+    Sine fit function:
+        a + b⋅sin(x⋅c + d)⋅exp(-x/e)
 
      parameters:
         background
