@@ -560,11 +560,13 @@ class Data(SharedGObject):
 
 ### File writing
 
-    def create_file(self, name=None, filepath=None, settings_file=True):
+    def create_file(self, name=None, filepath=None, settings_file=True,
+                          logging_file=True):
         '''
         Create a new data file and leave it open. In addition a
         settings file is generated, unless settings_file=False is
         specified.
+        A logfile is created unless logging_file is false.
 
         This function should be called after adding the comment and the
         coordinate and value metadata, because it writes the file header.
@@ -590,6 +592,27 @@ class Data(SharedGObject):
 
         if settings_file and in_qtlab:
             self._write_settings_file()
+
+        # If we want to save a log file of the experiment in the data folder
+        if logging_file and in_qtlab:
+
+            logger = logging.getLogger()
+
+            # We remove all handler except the first one.
+            # The first one is, by construction, the streamHanlder
+            # The other should be fileHandler that we want to delete
+
+            while len(logger.handlers) > 1:
+                logger.removeHandler(logger.handlers[-1])
+
+            # We create a new fileHandler in the data folder
+            file = logging.FileHandler(filename=self.get_filepath()[:-3]+'log',
+                                       mode='a+b')
+            file.setLevel(logging.INFO)
+            formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s: %(message)s (%(filename)s:%(lineno)d)',
+                                          datefmt='%Y-%m-%d %H:%M')
+            file.setFormatter(formatter)
+            logger.addHandler(file)
 
         try:
             if in_qtlab:

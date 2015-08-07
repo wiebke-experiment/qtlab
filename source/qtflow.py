@@ -306,4 +306,3 @@ def qtlab_exit():
 
     import qt
     qt.flow.exit_request()
-
