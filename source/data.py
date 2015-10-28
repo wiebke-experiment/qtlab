@@ -412,10 +412,10 @@ class Data(SharedGObject):
             if type(insname) not in (types.StringType, types.UnicodeType):
                 insname = insname.get_name()
 
-            label += ' (%s.%s' % (insname, info['parameter'])
-            if 'units' in info:
-                label += ' [%s]' % info['units']
-            label += ')'
+            label += ' (%s.%s)' % (insname, info['parameter'])
+
+        if 'units' in info:
+            label += ' [%s]' % info['units']
 
         elif 'name' not in info:
             label = 'dim%d' % dim
