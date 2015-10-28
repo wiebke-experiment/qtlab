@@ -599,20 +599,20 @@ class Data(SharedGObject):
             logger = logging.getLogger()
 
             # We remove all handler except the first one.
-            # The first one is, by construction, the streamHanlder
+            # The first one is, by construction, the streamHandler
             # The other should be fileHandler that we want to delete
 
             while len(logger.handlers) > 1:
                 logger.removeHandler(logger.handlers[-1])
 
             # We create a new fileHandler in the data folder
-            file = logging.FileHandler(filename=self.get_filepath()[:-3]+'log',
+            logfile = logging.FileHandler(filename=self.get_filepath()[:-3]+'log',
                                        mode='a+b')
-            file.setLevel(logging.INFO)
+            logfile.setLevel(logging.INFO)
             formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s: %(message)s (%(filename)s:%(lineno)d)',
                                           datefmt='%Y-%m-%d %H:%M')
-            file.setFormatter(formatter)
-            logger.addHandler(file)
+            logfile.setFormatter(formatter)
+            logger.addHandler(logfile)
 
         try:
             if in_qtlab:
