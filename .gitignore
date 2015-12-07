@@ -1,6 +1,7 @@
 *.pyc
-userconfig.py
 qtlab.cfg
 qtlab.lock
 qtlab.log
 qtlabgui.cfg
+userconfig.py
+tmp/

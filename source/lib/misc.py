@@ -96,7 +96,10 @@ def usleep(usec):
 
 def get_ipython():
     import IPython
-    if ipython_is_newer((0, 11)):
+
+    if ipython_is_newer((0, 13)):
+        return IPython.get_ipython()
+    elif ipython_is_newer((0, 11)):
         return IPython.core.ipapi.get()
     else:
         return IPython.ipapi.get()
@@ -146,4 +149,3 @@ def register_exit(func):
     else:
         import atexit
         atexit.register(func)
-

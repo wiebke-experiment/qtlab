@@ -1,3 +1,4 @@
+ # This Python file uses the following encoding: utf-8
 # fit.py, functions for fitting including uncertainty estimation
 # and option to keep parameters fixed.
 # Reinier Heeres <reinier@heeres.eu>, 2011
@@ -201,7 +202,7 @@ class Function:
             self.set_weight(weight)
         self.set_data(x, y, yerr=yerr)
         p = self.fit(p0)
-            
+
         print '\tRandom par: %s' % (pr, )
         s = ''
         for val, err in zip(p, self.get_fit_errors()):
@@ -240,7 +241,9 @@ class Polynomial(Function):
     '''
     Polynomial fit function of order n
 
-    Polynomial(order=2) creates fit a + bx + cx**2
+    Polynomial(order=2) creates fit:
+                     2
+        a + b⋅x + c⋅x
     '''
 
     def __init__(self, *args, **kwargs):
@@ -258,7 +261,8 @@ class Polynomial(Function):
 
 class Linear(Polynomial):
     '''
-    Linear fit function a + bx
+    Linear fit function:
+        a + b⋅x
     '''
 
     def __init__(self, *args, **kwargs):
@@ -267,7 +271,15 @@ class Linear(Polynomial):
 
 class Gaussian(Function):
     '''
-    Gaussian fit function: a + b / d / sqrt(pi/2) * exp(-2(x - c)**2 / d**2)
+    Gaussian fit function:
+                       ⎛           2   ⎞
+              ___      ⎜ -2⋅(-c + x)   ⎜
+            ╲╱ 2 ⋅b⋅exp⎜ ───────────── ⎜
+                       ⎜        2      ⎜
+                       ⎝      d        ⎠
+        a + ─────────────────────────────
+                            ___
+                          ╲╱ π ⋅d
 
      parameters:
         background
@@ -303,7 +315,12 @@ class Gaussian(Function):
 
 class GaussianPlain(Function):
     '''
-    Gaussian fit function: a + b * exp(-4ln(2)(x - c)**2 / d**2)
+    Gaussian fit function:
+                 ⎛           2          ⎞
+                 ⎜ -4⋅(-c + x) ⋅ln(2)   ⎜
+        a + b⋅exp⎜ ──────────────────── ⎜
+                 ⎜           2          ⎜
+                 ⎝         d            ⎠
 
      parameters:
         background
@@ -339,7 +356,11 @@ class GaussianPlain(Function):
 
 class Lorentzian(Function):
     '''
-    Lorentzian fit function: a + 2bd / pi / (4(x - c)**2 + d**2)
+    Lorentzian fit function:
+                   2⋅b⋅d
+        a + ───────────────────
+              ⎛ 2            2⎞
+            π⋅⎝d  + 4⋅(x - c) ⎠
 
      parameters:
         background
@@ -375,7 +396,16 @@ class Lorentzian(Function):
 
 class FanoLorentzian(Function):
     '''
-    FanoLorentzian fit function: a + (b/(1 + q**2))*((q*c/2 + 2*pi*x)**2/( (2*pi*x)**2 + (c/2)**2))
+    FanoLorentzian fit function:
+                               2
+                  ⎛c⋅q        ⎞
+                b⋅⎜─── + 2⋅π⋅x⎟
+                  ⎝ 2         ⎠
+        a + ───────────────────────
+            ⎛ 2          ⎞
+            ⎜c       2  2⎟ ⎛ 2    ⎞
+            ⎜── + 4⋅π ⋅x ⎟⋅⎝q  + 1⎠
+            ⎝4           ⎠
 
      parameters:
         background
@@ -396,7 +426,8 @@ class FanoLorentzian(Function):
 
 class LinearSin(Function):
     '''
-    Sine fit function with a linear slop: a + b*x + c * sin(x * d + e)
+    Sine fit function with a linear slop:
+        a + b⋅x + c⋅sin(d⋅x + e)
 
      parameters:
         background
@@ -418,7 +449,8 @@ class LinearSin(Function):
 
 class Exponential(Function):
     '''
-    Exponential fit function: a + b * exp((x - c) * d)
+    Exponential fit function:
+        a + b⋅exp(d⋅(x -c))
 
      parameters:
         background
@@ -439,7 +471,8 @@ class Exponential(Function):
 
 class Sine(Function):
     '''
-    Sine fit function: a + b * sin(x * c + d)
+    Sine fit function:
+        a + b⋅sin(x⋅c + d)
 
      parameters:
         background
@@ -458,91 +491,24 @@ class Sine(Function):
         ret = np.ones_like(x) * p[0] + p[1] * np.sin(x * p[2] + p[3])
         return ret
 
-
-
 class S21dB(Function):
     '''
-    S21 fit function
+    Asymetrical S21 function.
+    See Étienne Dumur thesis manuscript appendix B.
+                        ⎛2⋅ⅈ⋅Qi⋅(-f₀ + x)    ⎞
+                     Z₀⋅⎜       ───────── + 1⎟
+                        ⎝            f₀      ⎠
+        ───────────────────────────────────────────────────
+                    ⎛2⋅ⅈ⋅Qi⋅(-f₀ + x)       Qi⋅(ⅈ⋅Xe + Z₀)⎞
+        (ⅈ⋅Xe + Z₀)⋅⎜       ───────── + 1 + ──────────────⎟
+                    ⎝            f₀             Qc⋅Z₀     ⎠
 
      parameters:
         Internal quality factor
         External quality factor
-        Resonance frequency
-        Asymetry
-        background
-    '''
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('weight', WEIGHT_EQUAL)
-        kwargs.setdefault('nparams', 5)
-        Function.__init__(self, *args, **kwargs)
-
-    def func(self, p, x=None):
-        p, x = self.get_px(p, x)
-
-        Qi = p[0]
-        Qc = p[1]
-        f0 = p[2]
-        fd = p[3]
-        background = p[4]
-        
-        Q0 = Qi*Qc/(Qi + Qc)
-        omega0 = 2.*np.pi*f0
-        omegad = 2.*np.pi*fd
-        
-        ret = np.ones_like(x) * 1. - (Q0/Qc - 2.*1j*Q0*omegad/omega0)/(1. + 2.*1j*Q0*(2.*np.pi*x - omega0)/omega0)
-        return 20.*np.log10(abs(ret)) + background
-
-
-
-class S21dB_asymetric_mismatch(Function):
-    '''
-    S21 fit function
-
-     parameters:
-        Internal quality factor
-        External quality factor
-        Resonance frequency
-        Asymetry
-        background
-    '''
-
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('weight', WEIGHT_EQUAL)
-        kwargs.setdefault('nparams', 5)
-        Function.__init__(self, *args, **kwargs)
-
-    def func(self, p, x=None):
-        p, x = self.get_px(p, x)
-
-        Qi = p[0]
-        Qc = p[1]
-        f0 = p[2]
-        Ze = 1j*p[3]
-        background = p[4]
-        
-        omega0 = 2.*np.pi*f0
-
-
-
-        sup =  50./(50. + Ze)*(1.       + 2.*1j*Qi*(2.*np.pi*x - omega0)/omega0)
-        sub = 1. + (50. + Ze)*Qi/Qc/50. + 2.*1j*Qi*(2.*np.pi*x - omega0)/omega0
-        
-        return 20.*np.log10(abs(sup/sub)) + background
-
-
-
-class S21dB_asymetric_mismatch_complete(Function):
-    '''
-    S21 fit function
-
-     parameters:
-        Internal quality factor
-        External quality factor
-        Resonance frequency
-        Resonator characteristic impedance
-        Asymetry
-        background
+        Resonance frequency [GHz]
+        Asymetry (could be positive or negative) [ohm]
+        background [dB]
     '''
 
     def __init__(self, *args, **kwargs):
@@ -550,33 +516,40 @@ class S21dB_asymetric_mismatch_complete(Function):
         kwargs.setdefault('nparams', 6)
         Function.__init__(self, *args, **kwargs)
 
-    def func(self, p, x=None):
+    def func(self, p, x=None, Z0=50., output='dB'):
         p, x = self.get_px(p, x)
-        
+
         Qi = p[0]
         Qc = p[1]
         f0 = p[2]
-        Ze = 1j*p[3]
-        background = p[4]
-        Zr = p[5]
-        
-        omega0 = 2.*np.pi*f0
-        
-        
-        sup = 2.*Qi*np.sqrt(2.*Qc*50.*Zr/np.pi)*(2.*np.pi*x - omega0)/omega0 - 1j*np.sqrt(2.*Qc*50.*Zr/np.pi)
-        sub = 1. + 2.*1j*Qi*((2.*np.pi*x - omega0)/omega0 - np.sqrt(2.*Zr/np.pi/50./Qc))
-        Ztot = sup/sub
-        
-        S = 2.*Ztot*50./(2.*Ztot*(50. + Ze) + (50. + Ze)**2.)
-        
-        
-        return 20.*np.log10(abs(S)) + background
+        Xe = p[3]
+        backgrounddB = p[4]
+        backgroundPhase = p[5]
 
+        a = Z0/(Z0 + 1j*Xe)
+        b = (1. + 2.*1j*Qi*(x-f0)/f0)/\
+            (1. + 2.*1j*Qi*(x-f0)/f0 + (Z0 + 1j*Xe)*Qi/Qc/Z0)
+        y = a*b
 
+        if output == 'dB':
+            return 20.*np.log10(abs(y)) + backgrounddB
+        elif output == 'phase':
+
+            return np.angle(y.real + 1j*y.imag) + backgroundPhase
+        elif output == 'amplitude':
+
+            return abs(y)
+        elif output == 'real':
+
+            return y.real
+        elif output == 'imag':
+
+            return y.imag
 
 class ExponentialDecaySine(Function):
     '''
-    Sine fit function: a + b * sin(x * c + d)*exp(-x/e)
+    Sine fit function:
+        a + b⋅sin(x⋅c + d)⋅exp(-x/e)
 
      parameters:
         background
@@ -718,4 +691,3 @@ if __name__ == "__main__":
 
     plt.plot(data[:,1], data[:,0], 'ks')
     plt.plot(data[:,1], gauss.func(p), 'r+')
-
