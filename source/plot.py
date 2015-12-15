@@ -87,6 +87,8 @@ class Plot(SharedGObject):
             in a temporary file.
             supportbin (bool), default False. Whether the temporary file can
             be in binary format.
+            refreshrate (int), minimum elapsed time in second during two updates
+            of a graph being plotting without file. Default 1 second.
         '''
 
         maxpoints = kwargs.get('maxpoints', 10000)
@@ -95,6 +97,7 @@ class Plot(SharedGObject):
         autoupdate = kwargs.get('autoupdate', None)
         needtempfile = kwargs.get('needtempfile', False)
         supportbin = kwargs.get('supportbin', False)
+        refreshrate = kwargs.get('refreshrate', 1)
         name = kwargs.get('name', '')
         self._name = Plot._plot_list.new_item_name(self, name)
         SharedGObject.__init__(self, 'plot_%s' % self._name, replace=True)
@@ -110,6 +113,7 @@ class Plot(SharedGObject):
         self._autoupdate = autoupdate
         self._needtempfile = needtempfile
         self._supportbin = supportbin
+        self._refreshrate = refreshrate
 
         self._last_update = 0
         self._update_hid = None
@@ -447,6 +451,34 @@ class Plot2DBase(Plot):
         kwargs['coorddims'] = coorddims
         kwargs['valdim'] = valdim
         Plot.add_data(self, data, **kwargs)
+
+    def replace_inline_data(self, x, y, x_err=None, y_err=None):
+        '''
+            Replace the current curve by the data parameter.
+            TODO: handle 3D graph and colormap
+        '''
+
+
+        dt = time.time() - self._last_update
+        if dt < self._refreshrate:
+            return
+
+        if x_err is None:
+            x_err = np.zeros_like(x)
+
+        if y_err is None:
+            y_err = np.zeros_like(y)
+
+        # Use inline plot command
+        self.cmd('plot \'-\' using 1:2:3:4 with xyerrorbars')
+
+        for x, y in zip(x, y):
+            self.cmd(str(x)+' '+str(y)+' '+str(x - x_err)+' '+str(x + x_err)+' '+str(y - y_err)+' '+str(y + y_err))
+
+        self.cmd('eof')
+
+        self._last_update = time.time()
+
 
     def add(self, *args, **kwargs):
         '''
